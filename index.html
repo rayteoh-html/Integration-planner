@@ -134,7 +134,7 @@
             logoDiv.className = 'tool-logo';
             if (tool.logo) {
               const img = document.createElement('img');
-              img.src = 'logos/' + tool.logo;
+              img.src = tool.logo;
               img.alt = tool.name;
               logoDiv.appendChild(img);
             } else {
