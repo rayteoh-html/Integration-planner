@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integration Planner & Reporting Tool Finder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Integration Planner &amp; Reporting Tool Finder</h1>
+  </header>
+  <div class="hero"></div>
+  <div class="container">
+    <!-- Roadmap section guides users through a typical finance operations stack -->
+    <section class="section" id="roadmap">
+      <h2>Your finance operations roadmap</h2>
+      <p>Build a robust finance stack by progressing through these core layers:</p>
+      <ol class="roadmap-list">
+        <li><strong>Banking &amp; payments.</strong> Start with a digital business bank or payments platform to handle your money flows and company cards (e.g., Qonto, Wise, PayPal).</li>
+        <li><strong>Accounting &amp; bookkeeping.</strong> Choose cloud accounting software to record every transaction and stay compliant (e.g., Xero, Lexoffice, DATEV).</li>
+        <li><strong>Payroll &amp; expenses.</strong> Implement payroll and expense management to pay employees and control spending (e.g., Deel, Pleo).</li>
+        <li><strong>Open banking &amp; data access.</strong> Connect an open‑banking API to securely fetch transaction data and other account details (e.g., Salt Edge, FinAPI).</li>
+        <li><strong>Data integration, storage &amp; compute.</strong> Use ETL or iPaaS services to consolidate your data, choose a database or warehouse and pick a compute environment to run your applications (e.g., Fivetran, SyncHub, Coupler.io; Azure SQL Database, Amazon Redshift, MongoDB Atlas; Amazon EC2, Azure Virtual Machines, Google Compute Engine).</li>
+        <li><strong>Cash flow &amp; planning.</strong> Leverage cash‑flow management tools to forecast scenarios and optimise working capital (e.g., Agicap).</li>
+        <li><strong>Control &amp; compliance.</strong> Adopt ERP and tax solutions to enforce internal controls and statutory reporting (e.g., Scopevisio, DATEV).</li>
+        <li><strong>Visualise &amp; report.</strong> Finally, connect your unified data to BI platforms to build dashboards and share insights (e.g., Power BI, Tableau, Metabase).</li>
+      </ol>
+    </section>
+    <section class="section" id="selection">
+      <h2>Select your tools by roadmap stage</h2>
+      <p>Pick the products you currently use in each stage. We’ll identify direct integrations, surface useful connectors and suggest reporting tools.</p>
+      <div class="filter">
+        <label for="country-select"><strong>Filter by country:</strong></label>
+        <select id="country-select">
+          <option value="all">All countries</option>
+        </select>
+      </div>
+      <!-- Each stage and its tools will be rendered here -->
+      <div id="stage-sections"></div>
+      <button id="generate-btn">Generate recommendations</button>
+    </section>
+    <section id="results"></section>
+    <div class="footnotes" id="footnotes"></div>
+  </div>
+
+  <!-- Load the data model -->
+  <script src="data.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Container where each roadmap stage and its tools will be rendered
+      const stageSectionsDiv = document.getElementById('stage-sections');
+      const resultsDiv = document.getElementById('results');
+      const footnotesDiv = document.getElementById('footnotes');
+      const countrySelect = document.getElementById('country-select');
+      const allTools = window.tools;
+      const citations = window.citations;
+      let selectedIds = new Set();
+
+      // Build list of unique countries for filtering (excluding generic global markers)
+      const countrySet = new Set();
+      allTools.forEach(tool => {
+        (tool.countries || []).forEach(c => {
+          if (c && c !== 'Global' && c !== 'Worldwide') {
+            countrySet.add(c);
+          }
+        });
+      });
+      // Populate the select dropdown
+      Array.from(countrySet).sort().forEach(country => {
+        const opt = document.createElement('option');
+        opt.value = country;
+        opt.textContent = country;
+        countrySelect.appendChild(opt);
+      });
+
+      // Render tools grouped by their finance roadmap stage.  Each stage appears
+      // as its own section with a grid of logos.  The selectedIds set is
+      // maintained globally and used to determine selection state.
+      function renderStageSections() {
+        const selectedCountry = countrySelect.value;
+        stageSectionsDiv.innerHTML = '';
+        // Determine distinct stages from the data
+        const stages = Array.from(new Set(allTools.map(t => t.stage)));
+        // Define a custom order matching the finance operations roadmap
+        const stageOrder = ['Foundations', 'Integration & Automation', 'Control & Compliance', 'Strategic Finance & Reporting'];
+        stages.sort((a, b) => stageOrder.indexOf(a) - stageOrder.indexOf(b));
+
+        // Provide casual descriptions for each stage to guide the user
+        const stageDescriptions = {
+          'Foundations': 'Set up your banking, accounting, payroll and everyday tools.',
+          'Integration & Automation': 'Connect your data, choose a database or warehouse, select a compute environment and automate workflows.',
+          'Control & Compliance': 'Introduce ERP, tax and compliance systems.',
+          'Strategic Finance & Reporting': 'Build dashboards, forecasts and advanced analytics.'
+        };
+        stages.forEach(stage => {
+          // Create a wrapper for this stage
+          const stageDiv = document.createElement('div');
+          stageDiv.className = 'stage-section';
+          const stageHeader = document.createElement('h3');
+          stageHeader.className = 'stage-title';
+          stageHeader.textContent = stage;
+          stageDiv.appendChild(stageHeader);
+
+          // Add a description paragraph for this stage
+          if (stageDescriptions[stage]) {
+            const descP = document.createElement('p');
+            descP.className = 'stage-description';
+            descP.textContent = stageDescriptions[stage];
+            stageDiv.appendChild(descP);
+          }
+          // Container for tools in this stage
+          const grid = document.createElement('div');
+          grid.className = 'tool-grid';
+          const stageTools = allTools.filter(t => t.stage === stage);
+          stageTools.forEach(tool => {
+            const countries = tool.countries || [];
+            const show = selectedCountry === 'all' || countries.includes(selectedCountry) || countries.includes('Global') || countries.includes('Worldwide');
+            if (!show) return;
+            const label = document.createElement('label');
+            label.className = 'tool-card';
+            // Determine if tool is currently selected
+            const isSelected = selectedIds.has(tool.id);
+            if (isSelected) label.classList.add('selected');
+            // Hidden checkbox to keep a consistent interface with existing code
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'tool-select';
+            checkbox.value = tool.id;
+            checkbox.checked = isSelected;
+            checkbox.style.display = 'none';
+            // Logo or placeholder
+            const logoDiv = document.createElement('div');
+            logoDiv.className = 'tool-logo';
+            if (tool.logo) {
+              const img = document.createElement('img');
+              img.src = 'logos/' + tool.logo;
+              img.alt = tool.name;
+              logoDiv.appendChild(img);
+            } else {
+              const span = document.createElement('span');
+              const initials = tool.name.split(/\s+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+              span.textContent = initials;
+              logoDiv.appendChild(span);
+            }
+            // Caption
+            const captionDiv = document.createElement('div');
+            captionDiv.className = 'tool-caption';
+            captionDiv.textContent = tool.name;
+            // Append children
+            label.appendChild(checkbox);
+            label.appendChild(logoDiv);
+            label.appendChild(captionDiv);
+            // Click event toggles selection
+            label.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (selectedIds.has(tool.id)) {
+                selectedIds.delete(tool.id);
+              } else {
+                selectedIds.add(tool.id);
+              }
+              renderStageSections();
+            });
+            grid.appendChild(label);
+          });
+          stageDiv.appendChild(grid);
+          stageSectionsDiv.appendChild(stageDiv);
+        });
+      }
+
+      // Initial render
+      renderStageSections();
+
+      // Re-render when country filter changes
+      countrySelect.addEventListener('change', () => {
+        renderStageSections();
+      });
+
+      document.getElementById('generate-btn').addEventListener('click', () => {
+        // Clear previous results
+        resultsDiv.innerHTML = '';
+        footnotesDiv.innerHTML = '';
+
+        // Gather selected tools from the global selectedIds set
+        const selectedIdsArr = Array.from(selectedIds);
+        if (selectedIdsArr.length === 0) {
+          const msg = document.createElement('p');
+          msg.textContent = 'Please select at least one tool to see recommendations.';
+          resultsDiv.appendChild(msg);
+          return;
+        }
+        const selectedTools = allTools.filter(t => selectedIdsArr.includes(t.id));
+
+        // Capture the currently selected country for context when suggesting additional tools
+        const selectedCountry = countrySelect.value;
+
+        // Determine direct connections
+        const directPairs = [];
+        for (let i = 0; i < selectedTools.length; i++) {
+          for (let j = i + 1; j < selectedTools.length; j++) {
+            const t1 = selectedTools[i];
+            const t2 = selectedTools[j];
+            if (t1.directIntegrations && t1.directIntegrations.includes(t2.id)) {
+              directPairs.push(`${t1.name} ↔ ${t2.name}`);
+            } else if (t2.directIntegrations && t2.directIntegrations.includes(t1.id)) {
+              directPairs.push(`${t1.name} ↔ ${t2.name}`);
+            }
+          }
+        }
+
+        // Aggregate connectors and BI recommendations
+        const connectorsSet = new Set();
+        const biSet = new Set();
+        const citationIdsSet = new Set();
+        selectedTools.forEach(tool => {
+          (tool.connectors || []).forEach(c => connectorsSet.add(c));
+          (tool.recommendedBI || []).forEach(b => biSet.add(b));
+          (tool.citationIds || []).forEach(cid => citationIdsSet.add(cid));
+        });
+
+        // Build results sections
+        // Direct connections
+        const directSection = document.createElement('div');
+        directSection.className = 'results-section';
+        const directTitle = document.createElement('h3');
+        directTitle.textContent = 'Direct integrations';
+        directSection.appendChild(directTitle);
+        if (directPairs.length > 0) {
+          const list = document.createElement('ul');
+          directPairs.forEach(pair => {
+            const li = document.createElement('li');
+            li.textContent = pair;
+            list.appendChild(li);
+          });
+          directSection.appendChild(list);
+        } else {
+          const para = document.createElement('p');
+          para.textContent = 'No direct integrations found between the selected tools.';
+          directSection.appendChild(para);
+        }
+        resultsDiv.appendChild(directSection);
+
+        // Connector recommendations
+        const connectorsSection = document.createElement('div');
+        connectorsSection.className = 'results-section';
+        const connectorsTitle = document.createElement('h3');
+        connectorsTitle.textContent = 'Recommended connectors';
+        connectorsSection.appendChild(connectorsTitle);
+        const connectorsArray = Array.from(connectorsSet).filter(c => c);
+        if (connectorsArray.length > 0) {
+          const list = document.createElement('ul');
+          connectorsArray.forEach(conn => {
+            const li = document.createElement('li');
+            li.textContent = conn;
+            list.appendChild(li);
+          });
+          connectorsSection.appendChild(list);
+        } else {
+          const para = document.createElement('p');
+          para.textContent = 'No external connectors required for the selected tools.';
+          connectorsSection.appendChild(para);
+        }
+        resultsDiv.appendChild(connectorsSection);
+
+        // BI tool recommendations
+        const biSection = document.createElement('div');
+        biSection.className = 'results-section';
+        const biTitle = document.createElement('h3');
+        biTitle.textContent = 'Recommended reporting & BI tools';
+        biSection.appendChild(biTitle);
+        const biArray = Array.from(biSet).filter(b => b);
+        if (biArray.length > 0) {
+          const list = document.createElement('ul');
+          biArray.forEach(bi => {
+            const li = document.createElement('li');
+            li.textContent = bi;
+            list.appendChild(li);
+          });
+          biSection.appendChild(list);
+        } else {
+          const para = document.createElement('p');
+          para.textContent = 'Select tools that produce data to get BI recommendations.';
+          biSection.appendChild(para);
+        }
+        resultsDiv.appendChild(biSection);
+
+        // Suggest additional tools for missing categories
+        // Define a set of core finance categories based on the roadmap.  These cover the key layers of a finance stack.
+        const coreCategories = [
+          'Banking & Payments',
+          'Expense Management',
+          'Accounting & Bookkeeping',
+          'Accounting & Payroll',
+          'Payroll & HR',
+          'Data Integration & ETL',
+          'iPaaS & Automation',
+          'Cash Flow Management',
+          'Open Banking & Data',
+      'Reporting & BI',
+      'ERP & Business Management'
+        ];
+        // Determine which categories the user has already selected
+        const selectedCategories = new Set(selectedTools.map(t => t.category));
+        const missingCats = coreCategories.filter(cat => !selectedCategories.has(cat));
+        const recs = [];
+        missingCats.forEach(cat => {
+          // Find a suitable tool for this category that is available in the selected country or globally
+          const availableTools = allTools.filter(t => t.category === cat).filter(t => {
+            const countries = t.countries || [];
+            return selectedCountry === 'all' || countries.includes(selectedCountry) || countries.includes('Global') || countries.includes('Worldwide');
+          });
+          if (availableTools.length > 0) {
+            // Pick the first tool as recommendation
+            recs.push({ category: cat, tool: availableTools[0].name });
+          }
+        });
+        if (recs.length > 0) {
+          const missingSection = document.createElement('div');
+          missingSection.className = 'results-section';
+          const missingTitle = document.createElement('h3');
+          missingTitle.textContent = 'Recommended tools to complete your roadmap';
+          missingSection.appendChild(missingTitle);
+          const list = document.createElement('ul');
+          recs.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `${item.category}: ${item.tool}`;
+            list.appendChild(li);
+          });
+          missingSection.appendChild(list);
+          resultsDiv.appendChild(missingSection);
+        }
+
+        // Footnotes for citations
+        const citationIds = Array.from(citationIdsSet);
+        if (citationIds.length > 0) {
+          const footnotesTitle = document.createElement('div');
+          footnotesTitle.textContent = 'Evidence & References:';
+          footnotesDiv.appendChild(footnotesTitle);
+          const ol = document.createElement('ol');
+          footnotesDiv.appendChild(ol);
+          citationIds.forEach(cid => {
+            const ci = citations[cid];
+            if (!ci) return;
+            const li = document.createElement('li');
+            li.innerHTML = `${ci.text} (${ci.ref})`;
+            ol.appendChild(li);
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+/*
+  Basic styling for the integration planner prototype.  The design is
+  intentionally minimalistic to focus on the functionality while still
+  conveying a modern, marketplace feel.  Colors are chosen for a calm
+  professional appearance, similar to SaaS dashboards.
+*/
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fafaf9;
+  color: #333;
+}
+
+header {
+  background-color: #1f1f1f;
+  color: #ffffff;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hero {
+  width: 100%;
+  height: 280px;
+  background-image: url('hero.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.section h2 {
+  margin-top: 0;
+  font-size: 24px;
+  color: #d4af37;
+}
+
+
+/* Grid container for tools displayed within each stage.  Smaller minimum
+   column width to accommodate logos neatly. */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+/* Style for each tool card: vertical layout with logo and caption. */
+.tool-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+/* Selected state: highlight the border and subtly tint the background */
+.tool-card.selected {
+  border-color: #d4af37;
+  background-color: #fdf8ea;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tool-card:hover {
+  border-color: #d4af37;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo container for each tool.  The span fallback holds initials when there is no image. */
+.tool-logo {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.tool-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.tool-logo span {
+  font-size: 20px;
+  font-weight: bold;
+  color: #888;
+}
+
+/* Caption styling */
+.tool-caption {
+  font-size: 13px;
+  text-align: center;
+  color: #555;
+}
+
+/* Stage section styling */
+.stage-section {
+  margin-bottom: 30px;
+}
+.stage-title {
+  margin-top: 20px;
+  margin-bottom: 5px;
+  font-size: 20px;
+  color: #333;
+  border-bottom: 1px solid #e6e6e6;
+  padding-bottom: 4px;
+}
+
+/* Description text shown under each stage title */
+.stage-description {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+#generate-btn {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #d4af37;
+  color: #1f1f1f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+#generate-btn:hover {
+  background-color: #b48c2e;
+  color: #ffffff;
+}
+
+#results {
+  margin-top: 20px;
+}
+
+.results-section {
+  margin-bottom: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.results-section h3 {
+  margin-top: 0;
+  color: #d4af37;
+}
+
+.results-section ul {
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+/* Styling for the roadmap section */
+#roadmap {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 40px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+#roadmap h2 {
+  color: #d4af37;
+  margin-top: 0;
+}
+#roadmap .roadmap-list {
+  margin-left: 20px;
+  padding-left: 0;
+}
+#roadmap .roadmap-list li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Styling for the country filter dropdown */
+.filter {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.filter select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.footnotes {
+  margin-top: 30px;
+  font-size: 12px;
+  color: #555;
+}
+
+.footnotes ol {
+  padding-left: 20px;
+}
+
+.footnotes li {
+  margin-bottom: 5px;
+}
